@@ -1,6 +1,7 @@
 import logging
 import azure.functions as func
 
+from ..SharedCode.error_response_body import error_response_body
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
@@ -17,7 +18,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     if name:
         return func.HttpResponse(f"Hello {name}!")
     else:
+        res = error_response_body('Error occurred')
         return func.HttpResponse(
-            "Please pass a name on the query string or in the request body",
+            str(res),
             status_code=400
         )
