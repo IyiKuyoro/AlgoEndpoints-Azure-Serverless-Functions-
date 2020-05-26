@@ -18,7 +18,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     if name:
         return func.HttpResponse(f"Hello {name}!")
     else:
-        res = error_response_body('Error occurred')
+        res = error_response_body('No name provided')
         return func.HttpResponse(
             str(res),
             status_code=400
