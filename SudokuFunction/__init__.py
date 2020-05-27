@@ -117,8 +117,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
 def parse_board(sudoku_board_string):
     sudoku_board_string = re.sub('[^0-9,\[\]]+', '', sudoku_board_string)
+    validate_brackets_order(sudoku_board_string)
 
-    nums = re.split('],\[|\[{2}|]{2}|,', sudoku_board_string)
+    nums = re.split(']+,+\[+|\[+|]+|,', sudoku_board_string)
     arr_nums = [[],[],[],[],[],[],[],[],[]]
 
     col = 0
@@ -137,6 +138,29 @@ def parse_board(sudoku_board_string):
                 return arr_nums
 
     return arr_nums
+
+def validate_brackets_order(matrix):
+    matrix = re.sub('[0-9,]+', '', matrix)
+    
+    count = 0
+    error = False
+    for s in matrix:
+        if s == ']' and count <= 0:
+            error = True
+            break
+        elif s == ']' and count > 0:
+            count -= 1
+        elif s == '[':
+            count += 1
+
+    if error or count != 0:
+        raise APIException(
+                    "Brackets are not in the correct order",
+                    [
+                        "Opening and closing brackets must match",
+                    ],
+                    400
+                )
 
 def validate_integer(num):
     if num < 0 or num > 9 :
