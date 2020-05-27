@@ -1,22 +1,22 @@
 import json
 
-class success_response_body:
+class ErrorResponseBody:
 
-    def __init__(self, message):
+    def __init__(self, message, errors = []):
         self._success = False
         self._message = message
-        self._data = None
+        self._errors = errors
 
 
     def __str__(self):
         obj = {
             'success': self._success,
             'message': self._message,
-            'data': self._data,
+            'error': self._errors,
         }
 
         return json.dumps(obj)
 
 
-    def add_data(self, data):
-        self._data = data
+    def add_data(self, error):
+        self._errors.add(error)
