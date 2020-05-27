@@ -3,7 +3,7 @@ import json
 class SuccessResponseBody:
 
     def __init__(self, message):
-        self._success = False
+        self._success = True
         self._message = message
         self._data = None
 
