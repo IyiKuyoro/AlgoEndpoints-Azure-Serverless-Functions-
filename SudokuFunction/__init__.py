@@ -7,7 +7,7 @@ import numpy as np
 from math import floor
 from ..SharedCode.ErrorResponseBody import ErrorResponseBody
 from ..SharedCode.SuccessResponseBody import SuccessResponseBody
-from ..Exceptions.APIException import APIException
+from ..SharedCode.Exceptions.APIException import APIException
 
 class SudokuSolver:
 
