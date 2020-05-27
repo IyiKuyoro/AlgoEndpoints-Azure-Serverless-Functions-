@@ -20,7 +20,7 @@ Each endpoint has a specific format of data it is expecting in order to return t
 
 ### Endpoints Instructions
 
-- [SudokuSolver]()
+- [SudokuSolver](https://github.com/IyiKuyoro/AlgoEndpoints-Azure-Serverless-Functions-/blob/master/SudokuFunction/README.md)
 
 ### Response Format
 
