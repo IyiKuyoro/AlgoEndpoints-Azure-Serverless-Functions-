@@ -5,17 +5,20 @@ import azure.functions as func
 import numpy as np
 
 from math import floor
-from ..SharedCode.error_response_body import error_response_body
-from ..SharedCode.success_response_body import success_response_body
+from ..SharedCode.ErrorResponseBody import ErrorResponseBody
+from ..SharedCode.SuccessResponseBody import SuccessResponseBody
+from ..Exceptions.APIException import APIException
 
-class sudoku_solver:
+class SudokuSolver:
 
     def __init__(self, board):
+        self._original_board = np.array(board)
         self._board = np.array(board)
         self._empty_cells = []
 
     def __call__(self):
         self._solve()
+
         return self._board
 
     def _compute_possibilities(self):
@@ -78,6 +81,7 @@ class sudoku_solver:
 
         return True
 
+
 def main(req: func.HttpRequest) -> func.HttpResponse:
     req_body = req.get_json()
     logging.info(f'Sudoku Function triggered... with "{json.dumps(req_body)}"')
@@ -85,18 +89,25 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     try:
         sudoku_board = parse_board(req_body.get('board'))
 
-        solver = sudoku_solver(sudoku_board)
-        res = success_response_body('Here is the result')
-        logging.info(solver())
-        res.add_data(solver().tostring())
+        solver = SudokuSolver(sudoku_board)
+        res = SuccessResponseBody('Sudoku board solved')
+        res.add_data(solver().tolist())
+
         return func.HttpResponse(
             str(res),
             status_code=200,
             mimetype="application/json",
         )
+    except APIException as ex:
+        res = ErrorResponseBody(str(ex), ex.errors)
+        return func.HttpResponse(
+            str(res),
+            status_code=ex.code,
+            mimetype="application/json",
+        )
     except Exception as ex:
         logging.error(ex)
-        res = error_response_body('Server error')
+        res = ErrorResponseBody('Server error')
         return func.HttpResponse(
             str(res),
             status_code=500,
@@ -105,6 +116,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
 
 def parse_board(sudoku_board_string):
+    sudoku_board_string = re.sub('[^0-9,\[\]]+', '', sudoku_board_string)
+
     nums = re.split('],\[|\[{2}|]{2}|,', sudoku_board_string)
     arr_nums = [[],[],[],[],[],[],[],[],[]]
 
@@ -113,8 +126,7 @@ def parse_board(sudoku_board_string):
     for num in nums:
         if num:
             num = int(num)
-            if num < 0 or num > 9 :
-                raise Exception("Only single digit positive integers are permitted in sudoku.")
+            validate_integer(num)
 
             arr_nums[row].append(num)
             col += 1
@@ -125,3 +137,14 @@ def parse_board(sudoku_board_string):
                 return arr_nums
 
     return arr_nums
+
+def validate_integer(num):
+    if num < 0 or num > 9 :
+        raise APIException(
+                "Only single digit positive integers are permitted in sudoku.",
+                [
+                    "One or more integers in the matrix might be less than 0",
+                    "One or more of the integers in the matrix might be more than 9"
+                ],
+                400
+            )
