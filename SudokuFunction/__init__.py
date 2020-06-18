@@ -12,14 +12,19 @@ from ..SharedCode.Exceptions.APIException import APIException
 class SudokuSolver:
 
     def __init__(self, board):
-        self._original_board = np.array(board)
         self._board = np.array(board)
-        self._empty_cells = []
+        self._limit = 2_000
+        self._limit_count = 0
 
     def __call__(self):
-        self._solve()
+        if self._solve():
+            return self._board
 
-        return self._board
+        raise APIException(
+            'Could not find suitable solution.',
+            [],
+            400
+        )
 
     def _compute_possibilities(self):
         board_transposed = np.transpose(self._board)
@@ -51,6 +56,10 @@ class SudokuSolver:
         return empty_cells
 
     def _solve(self):
+        self._limit_count += 1
+        if self._limit_count >= self._limit:
+            return False
+
         empty_cells = sorted(self._compute_possibilities(), key=lambda element: len(element[2]))
 
         if len(empty_cells) <= 0:
